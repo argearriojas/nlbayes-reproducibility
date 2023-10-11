@@ -3,38 +3,80 @@ Code and instructions for reproducing the results for the NLBayes manuscript
 
 ## Linux setup
 
-### System dependency
-```bash
-# Install GNU Scientific Library
-sudo apt install -y libgsl-dev
-```
+### How to install Python and R
 
-### Python environment
+To install Python we can use miniconda
 ```bash
-# Prepare conda environment
-conda create -n nlbayes-reproducibility python=3.11
-conda activate nlbayes-reproducibility
-pip install cython
-pip install git+https://github.com/umbibio/nlbayes-python.git
-pip install statsmodels scikit-learn seaborn ipykernel
-```
+#!/bin/bash
 
-### R environment
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+```
+and follow the instructions.
+
+To install R in a debian based Linux distribution like Ubuntu, we may use the following command:
 ```bash
-# Install system dependencies
+#!/bin/bash
+
+sudo apt install r-base
+```
+### System dependencies
+The following commands will install several system libraries that are needed by the R and Python packages used:
+```bash
+#!/bin/bash
+
+# Install R packages dependencies
 sudo apt install -y \
     libcurl4-openssl-dev libxml2-dev libssl-dev \
     libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
     libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
 
-# Prepare R
+# Install GNU Scientific Library
+sudo apt install -y libgsl-dev
+```
+
+### Python environment
+It is recommended to create an independent Python environment for each project. Here we use the `conda` package manager.
+```bash
+#!/bin/bash
+
+# Prepare conda environment
+conda create -n nlbayes-reproducibility python=3.11
+conda activate nlbayes-reproducibility
+
+# Install NLBayes (python)
+pip install cython
+pip install git+https://github.com/umbibio/nlbayes-python.git
+
+# Install additional packages used in analysis
+pip install statsmodels scikit-learn seaborn ipykernel rpy2
+```
+
+### R environment
+```bash
+#!/bin/bash
+
+# Prepare and install NLBayes
 R -q -e "install.packages(c('rjson', 'Rcpp', 'RcppProgress', 'devtools'))"
 R -q -e "devtools::install_github('umbibio/nlbayes-r')"
+
+# Install packages used in analysis
+R -q -e "install.packages(c('umap', 'BiocManager', 'ggplot2', 'ggrepel'))"
+R -q -e "BiocManager::install(c('org.Hs.eg.db', 'viper', 'aracne.networks', 'GEOquery'))"
+```
+
+### Data download
+```bash
+#!/bin/bash
+
+mkdir -p ./data
+
+wget -O "data/three_tissue.rels.json" "https://umbibio.math.umb.edu/nlbayes/assets/data/networks/gtex_chip/homo_sapiens/tissue_independent/three_tissue.rels.json"
 ```
 
 ## Experiments
 
-### Fig 3. Simulations
+### Fig. 3. Simulations
 
 For this experiment we use the command line tool provided in the python package. 
 The `nlb-simulation` command automatically generates simulated networks and differential
@@ -63,10 +105,28 @@ After generating the results files, we can process them and make Figure 3 with t
 ```python
 #!/bin/env python
 
-from helpers import collect_simulations
+from py_scripts.utils import collect_simulations
 from figures import make_figure_3
 
 results, metadata = collect_simulations('./simulations')
 make_figure_3(results)
 ```
+A new `PNG` file is saved in the `figures` subfolder.
 
+### Fig. 4. NLBayes vs Viper
+
+First we generate the results for the TF activity inference from the two methods.
+The R method `compute.inference.comparison` generates three `CSV` files, one for each experiment (e2f3, c-myc, h-ras).
+```R
+#!/bin/env R
+
+source('r_scripts/utils.R')
+compute.inference.comparison()
+```
+
+Once the corresponding `CSV` files are available, we can make the figure.
+```R
+source('r_scripts/figures.R')
+make.figure.4()
+
+```
