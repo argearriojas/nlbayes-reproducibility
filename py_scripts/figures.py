@@ -1,3 +1,4 @@
+from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import metrics
@@ -105,4 +106,9 @@ def make_figure_3(results):
     plt.text(0.85, 1.15,'F)', {'size':16})
 
     plt.tight_layout()
+
+    filepath = Path('figures/fig3.png')
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+
+    plt.savefig(filepath, dpi=300)
     plt.show()
