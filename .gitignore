@@ -1,4 +1,6 @@
 *.pyc
 *.csv
+*.tsv
 *.gz
 *.json
+*.rds
