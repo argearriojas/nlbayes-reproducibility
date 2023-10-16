@@ -199,16 +199,15 @@ regulon2network <- function(regulon, keep.zeros=FALSE) {
 
 regulon2long <- function(regulon, keep.zeros=FALSE) {
   
-  long <- data.frame()
+  dfs <- list()
   for(src in names(regulon)) {
     weight <- regulon[[src]]$tfmode
     target <- names(weight)
     n <- length(weight)
-    df <- data.frame(uid=paste(rep(src, n), target, sep='-'), source=rep(src, n), target=target, weight=weight)
-    long <- rbind(long, df)
+    dfs[[src]] <- data.frame(uid=paste(rep(src, n), target, sep='-'), source=rep(src, n), target=target, weight=weight)
   }
 
-  long
+  do.call(rbind, dfs)
 }
 
 
@@ -408,6 +407,10 @@ compute.inference.comparison <- function() {
   regulon <- get.regulon(network.name)
 
   for (experiment.name in c('myc', 'e2f3', 'ras')) {
+
+    output.filename <- paste0('data/oe_',experiment.name, '_on_net_', network.name,'_nlbayes_and_viper', '.csv')
+    if (file.exists(output.filename)) next
+
     top.table <- get.oe.diff.expr(experiment.name)
     tT <- top.table[['tT']]
     gset <- top.table[['gset']]
@@ -424,7 +427,6 @@ compute.inference.comparison <- function() {
     viper.df <- run.viper(gset, regulon)
     nlbayes.df$viper.pvalue <- viper.df[nlbayes.df$symbol, 'p.value']
 
-    output.filename <- paste0('data/oe_',experiment.name, '_on_net_', network.name,'_nlbayes_and_viper', '.csv')
     write.csv(nlbayes.df, output.filename, row.names = FALSE)
   }
 }
