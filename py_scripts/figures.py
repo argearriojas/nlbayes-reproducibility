@@ -4,6 +4,16 @@ import seaborn as sns
 from sklearn import metrics
 import statsmodels.formula.api as smf
 
+import pandas as pd
+import decoupler as dc
+from scipy.stats import false_discovery_control
+import matplotlib.pyplot as plt
+import upsetplot as usp
+annot = pd.read_csv('data/annot.tsv', sep='\t')
+annot['Gene.ID'] = annot['Gene.ID'].astype(str)
+symbol2id = annot.set_index('Gene.symbol')
+annot = annot.set_index('Gene.ID')
+
 
 def make_figure_3(results):
     hue = 'evd_rnd_p'
@@ -111,4 +121,56 @@ def make_figure_3(results):
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
     plt.savefig(filepath, dpi=300)
+    plt.show()
+
+
+def make_figure_5():
+    import rpy2.robjects as robjects
+    from rpy2.robjects import pandas2ri
+    r = robjects.r
+    r.source('r_scripts/utils.R')
+
+    tT = pd.read_csv('data/myc_experiment_tT.tsv', sep='\t').set_index('Gene.ID')
+    tT.index = tT.index.astype(str)
+    msk = (tT['adj.P.Val'] < 0.05)
+    mat = tT.where(msk, 0).loc[:, ['logFC']].T
+
+    regulon = r['regulonbrca']
+    net = r['regulon2long'](regulon)
+    net = pandas2ri.rpy2py_dataframe(net).set_index('uid')
+    net = net.query('target in @mat.columns')
+    mat = mat.loc[:, net.target.unique()]
+
+    e, p = dc.run_ulm(mat, net)
+    ulm_df = pd.concat([e, p], axis=0).T
+    ulm_df.columns = ['e', 'p']
+
+    e, n, p = dc.run_gsea(mat, net)
+    gsea_df = pd.concat([e, n, p], axis=0).T
+    gsea_df.columns = ['e', 'n', 'p']
+
+    ulm_df['fdr'] = false_discovery_control(ulm_df.p)
+    gsea_df['fdr'] = false_discovery_control(gsea_df.p)
+
+    filename = 'data/oe_myc_on_net_regulonbrca_nlbayes_and_viper.csv'
+    nlbayes_df = pd.read_csv(filename)
+    nlbayes_df['id'] = symbol2id.loc[nlbayes_df.symbol, 'Gene.ID'].values
+    nlbayes_df = nlbayes_df.set_index('id')
+    nlbayes_df['viper.pvalue'].fillna(1, inplace=True)
+
+    df = pd.DataFrame({
+        'gsea': gsea_df.query('fdr < 0.05').p,
+        'ulm': ulm_df.query('fdr < 0.05').p,
+        'viper': nlbayes_df.query('`viper.pvalue` < 0.05')['viper.pvalue'],
+        'nlbayes': nlbayes_df.query('`posterior.p` > 0.2')['posterior.p']})
+    df = df.loc[df.index.isin(annot.index)]
+    df.index = annot.loc[df.index, 'Gene.symbol'].values
+    df.index.name = 'gene_symbol'
+    df = df.reset_index().melt(id_vars=['gene_symbol'], var_name='method', value_name='p').dropna()
+    memberships = df.groupby('method')['gene_symbol'].apply(list).to_dict()
+    fig = plt.figure()
+    upset = usp.UpSet(usp.from_contents(memberships), show_counts=True, sort_by='cardinality')
+    upset.style_subsets(present=["nlbayes"], facecolor='blue')
+    upset.plot(fig=fig)
+    plt.savefig('figures/fig5.png', dpi=300)
     plt.show()

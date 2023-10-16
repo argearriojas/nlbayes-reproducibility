@@ -31,8 +31,8 @@ sudo apt install -y \
     libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
     libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
 
-# Install GNU Scientific Library
-sudo apt install -y libgsl-dev
+# Install git, build tools and the GNU Scientific Library
+sudo apt install -y git build-essential libgsl-dev
 ```
 
 ### Python environment
@@ -49,7 +49,7 @@ pip install cython
 pip install git+https://github.com/umbibio/nlbayes-python.git
 
 # Install additional packages used in analysis
-pip install statsmodels scikit-learn seaborn ipykernel rpy2
+pip install statsmodels scikit-learn seaborn ipykernel rpy2 decoupler upsetplot
 ```
 
 ### R environment
@@ -85,7 +85,7 @@ expression, performs randomization as specified by named parameters and runs the
 #!/bin/bash
 
 # run simulation with no randomizations
-nlb-simulation --n_graphs 5 --n_replica 3 --net_seed  10 --evd_seed  20 --evd_rnd_p 0.00 --outdir ./simulations
+nlb-simulation --n_graphs 5 --n_replica 3 --net_seed  10 --evd_seed  20 --outdir ./simulations
 
 # run simulations for data randomization experiments
 nlb-simulation --n_graphs 5 --n_replica 3 --net_seed  30 --evd_seed  40 --evd_rnd_p 0.25 --outdir ./simulations
@@ -126,7 +126,46 @@ compute.inference.comparison()
 
 Once the corresponding `CSV` files are available, we can make the figure.
 ```R
+#!/bin/env R
+
 source('r_scripts/figures.R')
 make.figure.4()
 
+```
+
+To assess for agreement between both methods, we construct the corresponding 
+confusion matrix and use it as a contingency matrix in a fisher exact test
+with the 'greater' alternative hypothesis, i.e., the true odds ratio is greater
+than one.
+```R
+#!/bin/env R
+
+for (exp in c('e2f3', 'myc', 'ras')) {
+
+    # read result
+    filename <- paste0('data/oe_',exp,'_on_net_regulonbrca_nlbayes_and_viper.csv')
+    df <- read.table(filename, sep = ',', header = TRUE)
+    df$viper.pvalue[is.na(df$viper.pvalue)] <- 1
+
+    # compute contingency table
+    yy <- sum(df$posterior.p >= 0.2 & df$viper.pvalue <= 0.05)
+    yn <- sum(df$posterior.p >= 0.2 & df$viper.pvalue > 0.05)
+    ny <- sum(df$posterior.p < 0.2 & df$viper.pvalue <= 0.05)
+    nn <- sum(df$posterior.p < 0.2 & df$viper.pvalue > 0.05)
+    ctable <- matrix(c(yy, ny, yn, nn), nrow=2, ncol=2)
+
+    # print test
+    print(exp)
+    print(ctable)
+    print(fisher.test(ctable, alternative='greater'))
+}
+```
+
+### Fig. 5. Comparison to other methods
+
+To make figure 5, the `CSV` files from the previous step are needed.
+```python
+from figures import make_figure_5
+
+make_figure_5()
 ```
