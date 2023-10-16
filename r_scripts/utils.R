@@ -407,7 +407,7 @@ compute.inference.comparison <- function() {
   net <- get.network(network.name)
   regulon <- get.regulon(network.name)
 
-  for (experiment.name %in% c('myc', 'e2f3', 'ras')) {
+  for (experiment.name in c('myc', 'e2f3', 'ras')) {
     top.table <- get.oe.diff.expr(experiment.name)
     tT <- top.table[['tT']]
     gset <- top.table[['gset']]
