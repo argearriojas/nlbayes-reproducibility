@@ -4,7 +4,8 @@ of the paper titled: *"A Bayesian Noisy Logic Model for Inference of Transcripti
 Factor Activity from Single Cell and Bulk Transcriptomic Data"*
 ([Arriojas et. al. 2023](https://doi.org/10.1101/2023.05.03.539308)).
 
-
+Please explore the notebook [`figures.ipynb`](figures.ipynb) to learn how to 
+generate the corresponding files.
 
 ## Linux setup
 
