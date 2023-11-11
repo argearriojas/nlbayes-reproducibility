@@ -52,11 +52,12 @@ sudo apt install -y \
 # Install git, build tools and the GNU Scientific Library
 sudo apt install -y git build-essential libgsl-dev
 ```
-### Data download
+### Data download and initialization
 ```bash
 #!/bin/bash
 
 Rscript download_data.R
+Rscript init.R
 ```
 
 ### Python environment
