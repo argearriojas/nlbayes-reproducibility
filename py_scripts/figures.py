@@ -128,7 +128,7 @@ def make_figure_5():
     import rpy2.robjects as robjects
     from rpy2.robjects import pandas2ri
     r = robjects.r
-    r.source('r_scripts/utils.R')
+    r.source('r_scripts/nlbayes_utils.R')
 
     tT = pd.read_csv('data/myc_experiment_tT.tsv', sep='\t').set_index('Gene.ID')
     tT.index = tT.index.astype(str)

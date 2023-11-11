@@ -120,7 +120,7 @@ The R method `compute.inference.comparison` generates three `CSV` files, one for
 ```R
 #!/bin/env R
 
-source('r_scripts/utils.R')
+source('r_scripts/nlbayes_utils.R')
 compute.inference.comparison()
 ```
 
