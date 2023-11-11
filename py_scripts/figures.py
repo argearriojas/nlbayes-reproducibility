@@ -9,10 +9,6 @@ import decoupler as dc
 from scipy.stats import false_discovery_control
 import matplotlib.pyplot as plt
 import upsetplot as usp
-annot = pd.read_csv('data/annot.tsv', sep='\t')
-annot['Gene.ID'] = annot['Gene.ID'].astype(str)
-symbol2id = annot.set_index('Gene.symbol')
-annot = annot.set_index('Gene.ID')
 
 
 def make_figure_3(results):
@@ -129,6 +125,11 @@ def make_figure_5():
     from rpy2.robjects import pandas2ri
     r = robjects.r
     r.source('r_scripts/nlbayes_utils.R')
+
+    annot = pd.read_csv('data/annot.tsv', sep='\t')
+    annot['Gene.ID'] = annot['Gene.ID'].astype(str)
+    symbol2id = annot.set_index('Gene.symbol')
+    annot = annot.set_index('Gene.ID')
 
     tT = pd.read_csv('data/myc_experiment_tT.tsv', sep='\t').set_index('Gene.ID')
     tT.index = tT.index.astype(str)
