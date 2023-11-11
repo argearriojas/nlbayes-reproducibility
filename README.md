@@ -89,7 +89,7 @@ R -q -e "devtools::install_github('umbibio/nlbayes-r')"
 
 # Install packages used in analysis
 # For R version <= 4.1, there may be broken dependencies related to ggpattern
-#     you may consider install the following specific package versions.
+#     you may consider installing the following specific package versions.
 R -q -e "remotes::install_version('ggplot2', version='3.3.6', upgrade=FALSE)"
 R -q -e "remotes::install_version('ggh4x', version='0.2.1', upgrade=FALSE)"
 R -q -e "remotes::install_version('ggpattern', version='0.4.2', upgrade=FALSE)"
