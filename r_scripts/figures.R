@@ -364,7 +364,6 @@ make.figure.8 <- function() {
     library(cowplot)
     library(stringr)
     library(ggpattern)
-    # library(egg)
   })
 
   x <- AnnotationDbi::select(org.Hs.eg.db, keys(org.Hs.eg.db, "SYMBOL"), c("ENTREZID", "ENSEMBL"), "SYMBOL")

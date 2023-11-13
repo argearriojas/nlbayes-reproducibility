@@ -1,4 +1,4 @@
-source("common_utils.R")
+source("r_scripts/common_utils.R")
 
 if (file.exists("data/ancillary/d17.facs.rds")) {
   stop("data/ancillary/d17.facs.rds already exists")

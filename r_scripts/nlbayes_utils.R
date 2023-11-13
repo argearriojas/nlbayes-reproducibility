@@ -1,9 +1,9 @@
 suppressPackageStartupMessages({
-  library(org.Hs.eg.db)
+  library(dplyr)
   library(nlbayes)
   library(viper)
   library(aracne.networks)
-  library(dplyr)
+  library(org.Hs.eg.db)
 })
 
 # > keytypes(org.Hs.eg.db)

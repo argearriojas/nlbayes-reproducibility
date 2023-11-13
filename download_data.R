@@ -1,24 +1,34 @@
-if (!dir.exists("data")) dir.create("data")
+suppressPackageStartupMessages({
+  library(R.utils)
+  library(RCurl)
+})
 
-url <- "https://umbibio.math.umb.edu/nlbayes/assets/data/networks/gtex_chip/homo_sapiens/tissue_independent/three_tissue.rels.json"
-destfile <- "data/three_tissue.rels.json"
-if (!file.exists(destfile)) download.file(url, destfile, mode = "wb")
+src.urls <- c("https://github.com/argearriojas/nlbayes-reproducibility/releases/download/v1.0.0",
+              "https://poisson.math.umb.edu/~argenis/nlbayes",
+              "https://zenodo.org/records/10116664/files")
+
+download <- function(destfile) {
+  if (file.exists(destfile)) return(paste(destfile, "already exists. Skipping."))
+  destdir <- dirname(destfile)
+  if (!dir.exists(destdir)) dir.create(destdir, recursive = TRUE)
+
+  filename <- basename(destfile)
+
+  for (src.url in src.urls) {
+    url <- file.path(src.url, filename)
+    if (startsWith(url, "https://zenodo.org")) url <- paste0(url, "?download=1")
+
+    if (!url.exists(url)) next
+    download.file(url, destfile, mode = "wb")
+    break
+  }
+
+  if (endsWith(destfile, ".tar.gz")) return(untar(destfile, exdir = "data"))
+  if (endsWith(destfile, ".gz")) return(gunzip(destfile, remove = FALSE))
+}
 
 
-url <- "https://poisson.math.umb.edu/~argenis/nlbayes/celllines_count_data.tar.gz"
-destfile <- "data/celllines_count_data.tar.gz"
-if (!file.exists(destfile)) download.file(url, destfile, mode = "wb")
-if (!dir.exists("data/celllines")) untar(destfile, exdir = "data")
-
-
-url <- "https://poisson.math.umb.edu/~argenis/nlbayes/strandlab_count_data.tar.gz"
-destfile <- "data/strandlab_count_data.tar.gz"
-if (!file.exists(destfile)) download.file(url, destfile, mode = "wb")
-if (!dir.exists("data/strandlab")) untar(destfile, exdir = "data")
-
-
-if (!dir.exists("data/ancillary")) dir.create("data/ancillary")
-
-url <- "https://poisson.math.umb.edu/~argenis/nlbayes/ancillary/d27.facs.rds"
-destfile <- "data/ancillary/d27.facs.rds"
-if (!file.exists(destfile)) download.file(url, destfile, mode = "wb")
+download("data/three_tissue.rels.json.gz")
+download("data/celllines_count_data.tar.gz")
+download("data/strandlab_count_data.tar.gz")
+download("data/ancillary/d27.facs.rds")

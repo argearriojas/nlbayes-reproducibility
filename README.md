@@ -8,6 +8,12 @@ Please explore the notebooks [`figures.ipynb`](figures.ipynb)
 and [`figures_with_outputs.ipynb`](figures_with_outputs.ipynb) to learn how to 
 generate the corresponding files.
 
+Make sure to download the necessary files before executing the code. See the
+Rscript [`download_data.R`](download_data.R) and
+[the subsection below](tree/main#data-download-and-initialization)
+for how to use it.
+
+
 ## Linux setup
 
 ### How to install Python and R
@@ -58,6 +64,7 @@ sudo apt install -y git build-essential libgsl-dev
 ```bash
 #!/bin/bash
 
+# bash download_data.sh
 Rscript download_data.R
 Rscript init.R
 ```
